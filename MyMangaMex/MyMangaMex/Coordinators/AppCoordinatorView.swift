@@ -11,8 +11,17 @@ struct AppCoordinatorView: View {
             case .loading:
                 LoadingView()
             case .listado:
-                // Fase 4 implementará MangaListView
-                Color.clear
+                NavigationStack {
+                    MangaListView(coordinator: coordinator)
+                        .navigationDestination(isPresented: Binding(
+                            get: { coordinator.selectedMangaForDetail != nil },
+                            set: { if !$0 { coordinator.dismissDetail() } }
+                        )) {
+                            if let manga = coordinator.selectedMangaForDetail {
+                                MangaDetailView(manga: manga)
+                            }
+                        }
+                }
             case .error(let message):
                 VStack(spacing: 20) {
                     Text("Error al cargar")

@@ -41,3 +41,10 @@ Pods/
 
 # Claude Code
 .claude/
+
+# Specify
+.specify/
+
+# Planning docs (Obsidian notes, prompts, roadmaps)
+*.md
+!README.md

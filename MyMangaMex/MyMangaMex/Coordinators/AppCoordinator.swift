@@ -4,6 +4,7 @@ import Observation
 @Observable @MainActor
 final class AppCoordinator {
     private(set) var state: AppState = .splash
+    private(set) var selectedMangaForDetail: MangaDTO?
 
     @ObservationIgnored private let client: NetworkClient
     @ObservationIgnored private let splashDuration: Duration
@@ -24,6 +25,14 @@ final class AppCoordinator {
 
     func retry() async {
         await load()
+    }
+
+    func showMangaDetail(_ manga: MangaDTO) {
+        selectedMangaForDetail = manga
+    }
+
+    func dismissDetail() {
+        selectedMangaForDetail = nil
     }
 
     private func load() async {

@@ -1,4 +1,5 @@
 import SwiftUI
+import SwiftData
 
 @main
 struct MyMangaMexApp: App {
@@ -8,5 +9,6 @@ struct MyMangaMexApp: App {
         WindowGroup {
             AppCoordinatorView(coordinator: coordinator)
         }
+        .modelContainer(for: MangaCollectionEntry.self)
     }
 }

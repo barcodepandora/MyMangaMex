@@ -1,15 +1,15 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class CoverImageLoader {
+@MainActor
+final class CoverImageLoader: ObservableObject {
     enum State: Equatable {
         case loading
         case loaded
         case failed
     }
 
-    private(set) var state: State = .loading
+    @Published private(set) var state: State = .loading
     private let urlString: String?
     private let transport: any HTTPTransport
 

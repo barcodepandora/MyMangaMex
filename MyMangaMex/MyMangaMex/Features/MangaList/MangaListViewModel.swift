@@ -1,13 +1,13 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class MangaListViewModel {
-    private(set) var mangas: [MangaDTO] = []
-    private(set) var isLoading = false
-    private(set) var errorMessage: String?
-    private(set) var filter: MangaFilter = .none
-    private(set) var hasMore = true
+@MainActor
+final class MangaListViewModel: ObservableObject {
+    @Published private(set) var mangas: [MangaDTO] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var filter: MangaFilter = .none
+    @Published private(set) var hasMore = true
 
     private let client: NetworkClient
     private var currentPage = 0

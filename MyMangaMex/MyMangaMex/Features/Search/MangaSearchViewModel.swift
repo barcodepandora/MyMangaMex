@@ -1,28 +1,23 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class MangaSearchViewModel {
-    private(set) var mangas: [MangaDTO] = []
-    private(set) var authors: [AuthorDTO] = []
-    private(set) var isLoading = false
-    private(set) var errorMessage: String?
-    private(set) var hasMore = true
+@MainActor
+final class MangaSearchViewModel: ObservableObject {
+    @Published private(set) var mangas: [MangaDTO] = []
+    @Published private(set) var authors: [AuthorDTO] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var errorMessage: String?
+    @Published private(set) var hasMore = true
 
-    var searchMode: SearchMode = .beginsWith {
-        didSet {
-            guard searchMode != oldValue, !query.isEmpty else { return }
-            triggerSearch(query: query)
-        }
-    }
+    @Published var searchMode: SearchMode = .beginsWith
+    @Published private(set) var query: String = ""
 
-    static let defaultDebounceInterval: Duration = .milliseconds(400)
-    static let defaultPer = 20
+    nonisolated static let defaultDebounceInterval: Duration = .milliseconds(400)
+    nonisolated static let defaultPer = 20
 
     private let client: NetworkClient
-    private let debounceInterval: Duration
-    private var debounceTask: Task<Void, Never>?
-    private(set) var query = ""
+    private var searchSubscription: AnyCancellable?
+    private var pendingSearchTask: Task<Void, Never>?
     private var currentPage = 0
     private var per = defaultPer
     private var isLoadingPage = false
@@ -31,18 +26,35 @@ final class MangaSearchViewModel {
 
     init(client: NetworkClient = NetworkClient(), debounceInterval: Duration = defaultDebounceInterval) {
         self.client = client
-        self.debounceInterval = debounceInterval
+
+        let c = debounceInterval.components
+        let debounceSeconds = Double(c.seconds) + Double(c.attoseconds) / 1_000_000_000_000_000_000
+
+        // Combine pipeline: cualquier cambio en query o searchMode → debounce → búsqueda
+        searchSubscription = Publishers.CombineLatest($query, $searchMode)
+            .removeDuplicates(by: { $0.0 == $1.0 && $0.1 == $1.1 })
+            .debounce(for: .seconds(debounceSeconds), scheduler: DispatchQueue.main)
+            .sink { [weak self] query, _ in
+                guard let self else { return }
+                guard !query.isEmpty else {
+                    self.mangas = []
+                    self.hasMore = false
+                    return
+                }
+                self.pendingSearchTask?.cancel()
+                self.pendingSearchTask = Task { [weak self] in
+                    await self?.resetAndLoad()
+                }
+            }
     }
 
     func updateQuery(_ text: String) {
         query = text
-        debounceTask?.cancel()
-        guard !text.isEmpty else {
+        if text.isEmpty {
+            pendingSearchTask?.cancel()
             mangas = []
             hasMore = false
-            return
         }
-        triggerSearch(query: text)
     }
 
     func loadNextPageIfNeeded(currentIndex: Int) async {
@@ -65,17 +77,7 @@ final class MangaSearchViewModel {
 
     // MARK: — Private
 
-    private func triggerSearch(query text: String) {
-        debounceTask?.cancel()
-        debounceTask = Task { [weak self] in
-            guard let self else { return }
-            try? await Task.sleep(for: debounceInterval)
-            guard !Task.isCancelled else { return }
-            await resetAndLoad(query: text)
-        }
-    }
-
-    private func resetAndLoad(query: String) async {
+    private func resetAndLoad() async {
         generation += 1
         let gen = generation
         isLoadingPage = false

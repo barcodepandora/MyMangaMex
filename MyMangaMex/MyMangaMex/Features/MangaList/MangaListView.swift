@@ -1,11 +1,11 @@
 import SwiftUI
 
 struct MangaListView: View {
-    @State private var viewModel: MangaListViewModel
-    var coordinator: AppCoordinator
+    @StateObject private var viewModel: MangaListViewModel
+    @ObservedObject var coordinator: AppCoordinator
 
     init(viewModel: MangaListViewModel = MangaListViewModel(), coordinator: AppCoordinator) {
-        _viewModel = State(wrappedValue: viewModel)
+        _viewModel = StateObject(wrappedValue: viewModel)
         self.coordinator = coordinator
     }
 
@@ -44,7 +44,7 @@ struct MangaListView: View {
         .overlay {
             if viewModel.mangas.isEmpty && !viewModel.isLoading {
                 if let error = viewModel.errorMessage {
-                    ContentUnavailableView(error, systemImage: "wifi.slash")
+                    EmptyStateView(title: error, systemImage: "wifi.slash")
                 } else {
                     ProgressView("Cargando…")
                 }
@@ -88,7 +88,7 @@ private struct MangaRowView: View {
 // MARK: — Menú de filtro
 
 private struct MangaFilterMenu: View {
-    var viewModel: MangaListViewModel
+    @ObservedObject var viewModel: MangaListViewModel
 
     private let genres     = ["Action", "Adventure", "Comedy", "Drama", "Fantasy", "Horror", "Mystery", "Romance", "Sci-Fi", "Slice of Life"]
     private let demographics = ["Shounen", "Shoujo", "Seinen", "Josei"]

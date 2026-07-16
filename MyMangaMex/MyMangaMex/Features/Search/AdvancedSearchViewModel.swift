@@ -1,29 +1,29 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class AdvancedSearchViewModel {
+@MainActor
+final class AdvancedSearchViewModel: ObservableObject {
 
     // MARK: — Form state
-    var title: String = ""
-    var authorFirstName: String = ""
-    var authorLastName: String = ""
-    var selectedGenres: Set<String> = []
-    var selectedThemes: Set<String> = []
-    var selectedDemographics: Set<String> = []
-    var searchContains: Bool = false
+    @Published var title: String = ""
+    @Published var authorFirstName: String = ""
+    @Published var authorLastName: String = ""
+    @Published var selectedGenres: Set<String> = []
+    @Published var selectedThemes: Set<String> = []
+    @Published var selectedDemographics: Set<String> = []
+    @Published var searchContains: Bool = false
 
     // MARK: — Catalog (session-cached)
-    private(set) var availableGenres: [GenreDTO] = []
-    private(set) var availableThemes: [ThemeDTO] = []
-    private(set) var availableDemographics: [DemographicDTO] = []
+    @Published private(set) var availableGenres: [GenreDTO] = []
+    @Published private(set) var availableThemes: [ThemeDTO] = []
+    @Published private(set) var availableDemographics: [DemographicDTO] = []
     private var catalogLoaded = false
 
     // MARK: — Results
-    private(set) var mangas: [MangaDTO] = []
-    private(set) var isLoading = false
-    private(set) var hasMore = true
-    private(set) var validationError: String?
+    @Published private(set) var mangas: [MangaDTO] = []
+    @Published private(set) var isLoading = false
+    @Published private(set) var hasMore = true
+    @Published private(set) var validationError: String?
 
     // MARK: — Pagination state
     private var currentPage = 0

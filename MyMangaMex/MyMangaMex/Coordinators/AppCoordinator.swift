@@ -1,14 +1,14 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class AppCoordinator {
-    private(set) var state: AppState = .splash
-    private(set) var selectedMangaForDetail: MangaDTO?
-    private(set) var isSearchActive = false
+@MainActor
+final class AppCoordinator: ObservableObject {
+    @Published private(set) var state: AppState = .splash
+    @Published private(set) var selectedMangaForDetail: MangaDTO?
+    @Published private(set) var isSearchActive = false
 
-    @ObservationIgnored private let client: NetworkClient
-    @ObservationIgnored private let splashDuration: Duration
+    private let client: NetworkClient
+    private let splashDuration: Duration
 
     init(
         client: NetworkClient = NetworkClient(),

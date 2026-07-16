@@ -1,14 +1,15 @@
 import SwiftUI
-import SwiftData
+import CoreData
 
 @main
 struct MyMangaMexApp: App {
-    @State private var coordinator = AppCoordinator()
+    private let persistence = PersistenceController.shared
+    @StateObject private var coordinator = AppCoordinator()
 
     var body: some Scene {
         WindowGroup {
             AppCoordinatorView(coordinator: coordinator)
+                .environment(\.managedObjectContext, persistence.container.viewContext)
         }
-        .modelContainer(for: MangaCollectionEntry.self)
     }
 }

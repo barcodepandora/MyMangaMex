@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct MangaSearchView: View {
-    var coordinator: AppCoordinator
-    @State private var viewModel = MangaSearchViewModel()
+    @ObservedObject var coordinator: AppCoordinator
+    @StateObject private var viewModel = MangaSearchViewModel()
     @State private var searchTab: SearchTab = .mangas
     @FocusState private var isFieldFocused: Bool
 
@@ -84,13 +84,17 @@ struct MangaSearchView: View {
         Group {
             if viewModel.mangas.isEmpty && !viewModel.isLoading {
                 if viewModel.query.isEmpty {
-                    ContentUnavailableView(
-                        "Escribe para buscar",
+                    EmptyStateView(
+                        title: "Escribe para buscar",
                         systemImage: "magnifyingglass",
-                        description: Text("Busca por título usando los modos «empieza por» o «contiene»")
+                        description: "Busca por título usando los modos «empieza por» o «contiene»"
                     )
                 } else {
-                    ContentUnavailableView.search(text: viewModel.query)
+                    EmptyStateView(
+                        title: "Sin resultados",
+                        systemImage: "magnifyingglass",
+                        description: "No se encontraron mangas para «\(viewModel.query)»"
+                    )
                 }
             } else {
                 List {
@@ -124,7 +128,7 @@ struct MangaSearchView: View {
 // MARK: — Búsqueda de autores con estado propio
 
 private struct AuthorSearchField: View {
-    var viewModel: MangaSearchViewModel
+    @ObservedObject var viewModel: MangaSearchViewModel
     @State private var authorQuery = ""
 
     var body: some View {
@@ -151,15 +155,15 @@ private struct AuthorSearchField: View {
             .background(.quaternary, in: RoundedRectangle(cornerRadius: 10))
             .padding(.horizontal)
             .padding(.bottom, 8)
-            .onChange(of: authorQuery) {
+            .onChange(of: authorQuery) { _ in
                 if authorQuery.isEmpty { Task { await viewModel.searchAuthors(query: "") } }
             }
 
             if viewModel.authors.isEmpty {
-                ContentUnavailableView(
-                    "Busca un autor",
+                EmptyStateView(
+                    title: "Busca un autor",
                     systemImage: "person.2",
-                    description: Text("Escribe un nombre o apellido y pulsa Buscar")
+                    description: "Escribe un nombre o apellido y pulsa Buscar"
                 )
             } else {
                 List(viewModel.authors, id: \.id) { author in

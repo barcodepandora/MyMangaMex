@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct AdvancedSearchView: View {
-    var coordinator: AppCoordinator
-    @State private var viewModel = AdvancedSearchViewModel()
+    @ObservedObject var coordinator: AppCoordinator
+    @StateObject private var viewModel = AdvancedSearchViewModel()
 
     var body: some View {
         Form {

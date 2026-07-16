@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppCoordinatorView: View {
-    var coordinator: AppCoordinator
+    @ObservedObject var coordinator: AppCoordinator
 
     var body: some View {
         Group {

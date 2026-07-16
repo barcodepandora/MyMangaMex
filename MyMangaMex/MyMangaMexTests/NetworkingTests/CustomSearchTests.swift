@@ -27,7 +27,7 @@ struct CustomSearchTests {
     func advancedSearchRequestBody() throws {
         let search = CustomSearch(searchTitle: "Dragon", searchContains: true)
         let base   = URL(string: "https://mymanga-acacademy-5607149ebe3d.herokuapp.com")!
-        let req    = try APIRouter.searchMangaAdvanced(search).urlRequest(baseURL: base)
+        let req    = try APIRouter.searchMangaAdvanced(search, page: 1, per: 20).urlRequest(baseURL: base)
 
         #expect(req.httpMethod == "POST")
         #expect(req.value(forHTTPHeaderField: "Content-Type") == "application/json")

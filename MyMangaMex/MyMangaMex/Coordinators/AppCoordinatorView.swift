@@ -21,6 +21,12 @@ struct AppCoordinatorView: View {
                                 MangaDetailView(manga: manga)
                             }
                         }
+                        .navigationDestination(isPresented: Binding(
+                            get: { coordinator.isSearchActive },
+                            set: { if !$0 { coordinator.dismissSearch() } }
+                        )) {
+                            MangaSearchView(coordinator: coordinator)
+                        }
                 }
             case .error(let message):
                 VStack(spacing: 20) {

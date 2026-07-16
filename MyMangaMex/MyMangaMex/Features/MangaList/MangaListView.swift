@@ -31,6 +31,13 @@ struct MangaListView: View {
         .navigationTitle("Mangas")
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
+                Button {
+                    coordinator.showSearch()
+                } label: {
+                    Image(systemName: "magnifyingglass")
+                }
+            }
+            ToolbarItem(placement: .topBarTrailing) {
                 MangaFilterMenu(viewModel: viewModel)
             }
         }

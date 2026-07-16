@@ -101,7 +101,7 @@ struct APIRouterTests {
     @Test("searchMangaAdvanced — método POST y ruta correcta")
     func searchMangaAdvancedRouting() throws {
         let search = CustomSearch(searchContains: false)
-        let req = try APIRouter.searchMangaAdvanced(search).urlRequest(baseURL: base)
+        let req = try APIRouter.searchMangaAdvanced(search, page: 1, per: 20).urlRequest(baseURL: base)
         #expect(req.url?.path == "/search/manga")
         #expect(req.httpMethod == "POST")
     }

@@ -26,6 +26,15 @@ struct MangaSearchView: View {
         }
         .navigationTitle("Búsqueda")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .topBarTrailing) {
+                NavigationLink {
+                    AdvancedSearchView(coordinator: coordinator)
+                } label: {
+                    Label("Avanzada", systemImage: "slider.horizontal.3")
+                }
+            }
+        }
     }
 
     // MARK: — Mangas

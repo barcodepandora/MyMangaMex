@@ -11,8 +11,8 @@ final class MangaSearchViewModel {
 
     var searchMode: SearchMode = .beginsWith {
         didSet {
-            guard searchMode != oldValue, !currentQuery.isEmpty else { return }
-            triggerSearch(query: currentQuery)
+            guard searchMode != oldValue, !query.isEmpty else { return }
+            triggerSearch(query: query)
         }
     }
 
@@ -22,7 +22,7 @@ final class MangaSearchViewModel {
     private let client: NetworkClient
     private let debounceInterval: Duration
     private var debounceTask: Task<Void, Never>?
-    private var currentQuery = ""
+    private(set) var query = ""
     private var currentPage = 0
     private var per = defaultPer
     private var isLoadingPage = false
@@ -35,7 +35,7 @@ final class MangaSearchViewModel {
     }
 
     func updateQuery(_ text: String) {
-        currentQuery = text
+        query = text
         debounceTask?.cancel()
         guard !text.isEmpty else {
             mangas = []
@@ -65,13 +65,13 @@ final class MangaSearchViewModel {
 
     // MARK: — Private
 
-    private func triggerSearch(query: String) {
+    private func triggerSearch(query text: String) {
         debounceTask?.cancel()
         debounceTask = Task { [weak self] in
             guard let self else { return }
             try? await Task.sleep(for: debounceInterval)
             guard !Task.isCancelled else { return }
-            await resetAndLoad(query: query)
+            await resetAndLoad(query: text)
         }
     }
 
@@ -100,11 +100,11 @@ final class MangaSearchViewModel {
             isLoading = false
         }
 
-        let query = currentQuery
-        guard !query.isEmpty else { return }
+        let searchQuery = query
+        guard !searchQuery.isEmpty else { return }
 
         do {
-            let route = routeForCurrentMode(query: query, page: nextPage)
+            let route = routeForCurrentMode(query: searchQuery, page: nextPage)
             let page: Page<MangaDTO> = try await client.request(route)
             guard generation == gen else { return }
             loadedPages.insert(nextPage)

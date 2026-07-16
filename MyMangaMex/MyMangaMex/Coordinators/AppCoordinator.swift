@@ -5,6 +5,7 @@ import Observation
 final class AppCoordinator {
     private(set) var state: AppState = .splash
     private(set) var selectedMangaForDetail: MangaDTO?
+    private(set) var isSearchActive = false
 
     @ObservationIgnored private let client: NetworkClient
     @ObservationIgnored private let splashDuration: Duration
@@ -33,6 +34,14 @@ final class AppCoordinator {
 
     func dismissDetail() {
         selectedMangaForDetail = nil
+    }
+
+    func showSearch() {
+        isSearchActive = true
+    }
+
+    func dismissSearch() {
+        isSearchActive = false
     }
 
     private func load() async {

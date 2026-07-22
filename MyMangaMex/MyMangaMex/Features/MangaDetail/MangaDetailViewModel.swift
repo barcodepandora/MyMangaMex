@@ -1,15 +1,15 @@
 import Foundation
-import Observation
+import Combine
 
-@Observable @MainActor
-final class MangaDetailViewModel {
+@MainActor
+final class MangaDetailViewModel: ObservableObject {
     let manga: MangaDTO
 
-    var purchasedVolumes: Int = 0
-    var readingVolume: Int = 0
-    var isComplete: Bool = false
+    @Published var purchasedVolumes: Int = 0
+    @Published var readingVolume: Int = 0
+    @Published var isComplete: Bool = false
 
-    private(set) var validationError: CollectionError?
+    @Published private(set) var validationError: CollectionError?
 
     private let repository: any CollectionRepositoryProtocol
 
@@ -31,8 +31,8 @@ final class MangaDetailViewModel {
 
     func loadCollection() {
         guard let entry = try? repository.entry(for: manga.id) else { return }
-        purchasedVolumes = entry.purchasedVolumes
-        readingVolume = entry.readingVolume
+        purchasedVolumes = Int(entry.purchasedVolumes)
+        readingVolume = Int(entry.readingVolume)
         isComplete = entry.isComplete
     }
 
@@ -47,8 +47,6 @@ final class MangaDetailViewModel {
             validationError = nil
         } catch let error as CollectionError {
             validationError = error
-        } catch {
-            // propagación inesperada del repositorio
-        }
+        } catch {}
     }
 }

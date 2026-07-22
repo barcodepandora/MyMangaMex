@@ -76,13 +76,13 @@ struct APIRouterTests {
 
     @Test("searchMangasBeginsWith — ruta incluye texto")
     func searchMangasBeginsWithRouting() throws {
-        let req = try APIRouter.searchMangasBeginsWith("dragon").urlRequest(baseURL: base)
+        let req = try APIRouter.searchMangasBeginsWith("dragon", page: 1, per: 20).urlRequest(baseURL: base)
         #expect(req.url?.path == "/search/mangasBeginsWith/dragon")
     }
 
     @Test("searchMangasContains — ruta incluye texto")
     func searchMangasContainsRouting() throws {
-        let req = try APIRouter.searchMangasContains("ball").urlRequest(baseURL: base)
+        let req = try APIRouter.searchMangasContains("ball", page: 1, per: 20).urlRequest(baseURL: base)
         #expect(req.url?.path == "/search/mangasContains/ball")
     }
 
@@ -101,7 +101,7 @@ struct APIRouterTests {
     @Test("searchMangaAdvanced — método POST y ruta correcta")
     func searchMangaAdvancedRouting() throws {
         let search = CustomSearch(searchContains: false)
-        let req = try APIRouter.searchMangaAdvanced(search).urlRequest(baseURL: base)
+        let req = try APIRouter.searchMangaAdvanced(search, page: 1, per: 20).urlRequest(baseURL: base)
         #expect(req.url?.path == "/search/manga")
         #expect(req.httpMethod == "POST")
     }

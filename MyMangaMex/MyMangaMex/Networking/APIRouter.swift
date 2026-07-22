@@ -11,11 +11,11 @@ enum APIRouter: Sendable {
     case listMangasByDemographic(String)
     case listMangasByTheme(String)
     case listMangasByAuthor(String)
-    case searchMangasBeginsWith(String)
-    case searchMangasContains(String)
+    case searchMangasBeginsWith(String, page: Int, per: Int)
+    case searchMangasContains(String, page: Int, per: Int)
     case searchAuthor(String)
     case searchManga(Int)
-    case searchMangaAdvanced(CustomSearch)
+    case searchMangaAdvanced(CustomSearch, page: Int, per: Int)
 
     nonisolated func urlRequest(baseURL: URL) throws -> URLRequest {
         var components = URLComponents(
@@ -54,11 +54,11 @@ private extension APIRouter {
         case .listMangasByDemographic(let v): return "/list/mangaByDemographic/\(v)"
         case .listMangasByTheme(let v):       return "/list/mangaByTheme/\(v)"
         case .listMangasByAuthor(let id):     return "/list/mangaByAuthor/\(id)"
-        case .searchMangasBeginsWith(let t):  return "/search/mangasBeginsWith/\(t)"
-        case .searchMangasContains(let t):    return "/search/mangasContains/\(t)"
+        case .searchMangasBeginsWith(let t, _, _): return "/search/mangasBeginsWith/\(t)"
+        case .searchMangasContains(let t, _, _):   return "/search/mangasContains/\(t)"
         case .searchAuthor(let t):            return "/search/author/\(t)"
         case .searchManga(let id):            return "/search/manga/\(id)"
-        case .searchMangaAdvanced:            return "/search/manga"
+        case .searchMangaAdvanced:             return "/search/manga"
         }
     }
 
@@ -72,7 +72,10 @@ private extension APIRouter {
     nonisolated var queryItems: [URLQueryItem] {
         switch self {
         case .listMangas(let page, let per),
-             .listBestMangas(let page, let per):
+             .listBestMangas(let page, let per),
+             .searchMangasBeginsWith(_, let page, let per),
+             .searchMangasContains(_, let page, let per),
+             .searchMangaAdvanced(_, let page, let per):
             return [
                 URLQueryItem(name: "page", value: "\(page)"),
                 URLQueryItem(name: "per",  value: "\(per)")
@@ -84,7 +87,7 @@ private extension APIRouter {
 
     nonisolated var httpBody: Data? {
         switch self {
-        case .searchMangaAdvanced(let search):
+        case .searchMangaAdvanced(let search, _, _):
             return try? JSONEncoder().encode(search)
         default:
             return nil

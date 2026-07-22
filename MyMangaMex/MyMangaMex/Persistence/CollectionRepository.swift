@@ -1,4 +1,4 @@
-import SwiftData
+import CoreData
 
 protocol CollectionRepositoryProtocol {
     func save(mangaId: Int, purchasedVolumes: Int, readingVolume: Int, isComplete: Bool) throws
@@ -7,9 +7,9 @@ protocol CollectionRepositoryProtocol {
 }
 
 final class CollectionRepository: CollectionRepositoryProtocol {
-    private let context: ModelContext
+    private let context: NSManagedObjectContext
 
-    init(context: ModelContext) {
+    init(context: NSManagedObjectContext) {
         self.context = context
     }
 
@@ -17,25 +17,22 @@ final class CollectionRepository: CollectionRepositoryProtocol {
         guard purchasedVolumes >= 0 else { throw CollectionError.negativeVolumes }
         guard readingVolume <= purchasedVolumes else { throw CollectionError.readingExceedsPurchased }
 
-        if let existing = try entry(for: mangaId) {
-            existing.purchasedVolumes = purchasedVolumes
-            existing.readingVolume = readingVolume
-            existing.isComplete = isComplete
-        } else {
-            context.insert(MangaCollectionEntry(
-                mangaId: mangaId,
-                purchasedVolumes: purchasedVolumes,
-                readingVolume: readingVolume,
-                isComplete: isComplete
-            ))
-        }
+        let entry = (try self.entry(for: mangaId)) ?? MangaCollectionEntry(context: context)
+        entry.mangaId = Int32(mangaId)
+        entry.purchasedVolumes = Int32(purchasedVolumes)
+        entry.readingVolume = Int32(readingVolume)
+        entry.isComplete = isComplete
+        try context.save()
     }
 
     func entry(for mangaId: Int) throws -> MangaCollectionEntry? {
-        try context.fetch(FetchDescriptor<MangaCollectionEntry>()).first { $0.mangaId == mangaId }
+        let request = NSFetchRequest<MangaCollectionEntry>(entityName: "MangaCollectionEntry")
+        request.predicate = NSPredicate(format: "mangaId == %d", Int32(mangaId))
+        request.fetchLimit = 1
+        return try context.fetch(request).first
     }
 
     func allEntries() throws -> [MangaCollectionEntry] {
-        try context.fetch(FetchDescriptor<MangaCollectionEntry>())
+        try context.fetch(NSFetchRequest<MangaCollectionEntry>(entityName: "MangaCollectionEntry"))
     }
 }

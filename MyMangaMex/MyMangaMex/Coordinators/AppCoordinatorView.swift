@@ -1,7 +1,7 @@
 import SwiftUI
 
 struct AppCoordinatorView: View {
-    var coordinator: AppCoordinator
+    @ObservedObject var coordinator: AppCoordinator
 
     var body: some View {
         Group {
@@ -20,6 +20,12 @@ struct AppCoordinatorView: View {
                             if let manga = coordinator.selectedMangaForDetail {
                                 MangaDetailView(manga: manga)
                             }
+                        }
+                        .navigationDestination(isPresented: Binding(
+                            get: { coordinator.isSearchActive },
+                            set: { if !$0 { coordinator.dismissSearch() } }
+                        )) {
+                            MangaSearchView(coordinator: coordinator)
                         }
                 }
             case .error(let message):

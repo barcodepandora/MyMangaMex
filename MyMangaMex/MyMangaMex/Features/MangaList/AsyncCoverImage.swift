@@ -1,25 +1,30 @@
 import SwiftUI
 
 struct AsyncCoverImage: View {
-    let urlString: String?
+    @StateObject private var loader: CoverImageLoader
+
+    init(urlString: String?) {
+        _loader = StateObject(wrappedValue: CoverImageLoader(urlString: urlString))
+    }
 
     var body: some View {
-        if let urlString, let url = URL(string: urlString) {
-            AsyncImage(url: url) { phase in
-                switch phase {
-                case .empty:
-                    placeholder
-                case .success(let image):
-                    image.resizable().scaledToFill()
-                case .failure:
-                    fallbackView
-                @unknown default:
+        Group {
+            switch loader.state {
+            case .loading:
+                placeholder
+            case .loaded:
+                if let uiImage = loader.image {
+                    Image(uiImage: uiImage)
+                        .resizable()
+                        .scaledToFill()
+                } else {
                     fallbackView
                 }
+            case .failed:
+                fallbackView
             }
-        } else {
-            fallbackView
         }
+        .task { await loader.load() }
     }
 
     private var placeholder: some View {

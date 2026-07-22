@@ -1,34 +1,39 @@
 import SwiftUI
-import SwiftData
+import CoreData
 
 struct MangaDetailView: View {
     let manga: MangaDTO
-    @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: MangaDetailViewModel?
+    @Environment(\.managedObjectContext) private var context
 
     var body: some View {
-        Group {
-            if let vm = viewModel {
-                MangaDetailContentView(viewModel: vm)
-            } else {
-                ProgressView()
-            }
-        }
-        .navigationTitle(manga.titleEnglish ?? manga.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .task {
-            let repo = CollectionRepository(context: modelContext)
-            let vm = MangaDetailViewModel(manga: manga, repository: repo)
-            vm.loadCollection()
-            viewModel = vm
-        }
+        MangaDetailHost(manga: manga, context: context)
+    }
+}
+
+// MARK: — Host: posee el @StateObject (necesita el contexto antes de init)
+
+private struct MangaDetailHost: View {
+    @StateObject private var viewModel: MangaDetailViewModel
+
+    init(manga: MangaDTO, context: NSManagedObjectContext) {
+        _viewModel = StateObject(wrappedValue: MangaDetailViewModel(
+            manga: manga,
+            repository: CollectionRepository(context: context)
+        ))
+    }
+
+    var body: some View {
+        MangaDetailContentView(viewModel: viewModel)
+            .navigationTitle(viewModel.displayTitle)
+            .navigationBarTitleDisplayMode(.inline)
+            .onAppear { viewModel.loadCollection() }
     }
 }
 
 // MARK: — Contenido del detalle
 
 private struct MangaDetailContentView: View {
-    @Bindable var viewModel: MangaDetailViewModel
+    @ObservedObject var viewModel: MangaDetailViewModel
 
     var body: some View {
         ScrollView {

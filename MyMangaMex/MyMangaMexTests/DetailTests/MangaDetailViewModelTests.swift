@@ -1,5 +1,5 @@
 import Testing
-import SwiftData
+import CoreData
 @testable import MyMangaMex
 import Foundation
 
@@ -185,10 +185,8 @@ struct MangaDetailViewModelTests {
 
     @Test("nueva instancia del ViewModel carga datos del repositorio real en memoria")
     func newInstanceLoadsPersistedDataReal() throws {
-        let config = ModelConfiguration(isStoredInMemoryOnly: true)
-        let container = try ModelContainer(for: MangaCollectionEntry.self, configurations: config)
-        let context = ModelContext(container)
-        let repo = CollectionRepository(context: context)
+        let controller = PersistenceController(inMemory: true)
+        let repo = CollectionRepository(context: controller.container.viewContext)
 
         let vm1 = MangaDetailViewModel(manga: makeMangaDTO(id: 42), repository: repo)
         vm1.purchasedVolumes = 7
